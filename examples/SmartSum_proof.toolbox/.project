@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>SmartSum_proof</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>toolbox.builder.TLAParserBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>toolbox.natures.TLANature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>DP.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/DP.tla</location>
+		</link>
+		<link>
+			<name>DP_Specs.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/DP_Specs.tla</location>
+		</link>
+		<link>
+			<name>SmartSum_proof.tla</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/SmartSum_proof.tla</locationURI>
+		</link>
+		<link>
+			<name>SmartSum_transf.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/SmartSum_transf.tla</location>
+		</link>
+	</linkedResources>
+</projectDescription>

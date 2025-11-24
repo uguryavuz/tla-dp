@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>2xLaplace_proof</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>toolbox.builder.TLAParserBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>toolbox.natures.TLANature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>2xLaplace_proof.tla</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/2xLaplace_proof.tla</locationURI>
+		</link>
+		<link>
+			<name>2xLaplace_transf.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/2xLaplace_transf.tla</location>
+		</link>
+		<link>
+			<name>DP.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/DP.tla</location>
+		</link>
+		<link>
+			<name>DP_Specs.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/DP_Specs.tla</location>
+		</link>
+		<link>
+			<name>DifferentialPrivacy.tla</name>
+			<type>1</type>
+			<location>/Users/uguryavuz/Desktop/pcal-test/tla-dp/examples/DifferentialPrivacy.tla</location>
+		</link>
+	</linkedResources>
+</projectDescription>
