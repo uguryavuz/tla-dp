@@ -1,20 +1,8 @@
 --------------------------- MODULE 2xLaplace_proof ---------------------------
-EXTENDS Integers, DP_Specs, TLAPS
-
-(* To instantiate properly *)
-------------------------------------------------------------------------------
-CONSTANTS Lap(_, _), Exp(_, _, _), AbsExp(_, _, _, _, _, _, _) (* left as consts *)
-VARIABLES pc, mem1, mem2, y1, y2, z1, z2, out1, out2, v_eps, v_delta
-------------------------------------------------------------------------------
+EXTENDS 2xLaplace_transf, TLAPS
 
 (* Arbitrary epsilon (positive integer) *)
-EpsDef == CHOOSE eps \in Int : eps >= 0
-
-(* Instantiate transformed 2xLaplace with EpsDef, Hoare spec of AbsLap *)
-INSTANCE 2xLaplace_transf
-  WITH 
-    Eps <- EpsDef,
-    AbsLap <- AbsLapSpec
+ASSUMPTION EpsNat == Epsilon \in Nat
 
 ------------------------------------------------------------------------------
 (* Type correctness invariant *)
@@ -28,15 +16,14 @@ TypeOK == /\ pc \in {"L1", "L2", "L3", "Done"}
           /\ z2 \in Int
           /\ out1 \in Int \X Int
           /\ out2 \in Int \X Int
-          /\ /\ v_eps \in Int
-             /\ v_eps >= 0
-          /\ /\ v_delta \in Int
-             /\ v_delta >= 0
+          /\ v_eps \in Nat
+          /\ v_delta \in Nat
 
 THEOREM TypeOKInv == Spec => []TypeOK
   <1>1. Init => TypeOK
     BY DEF Init, TypeOK
   <1>2. TypeOK /\ [Next]_vars => TypeOK'
+    <2> USE EpsNat
     <2> SUFFICES ASSUME TypeOK,
                         [Next]_vars
                  PROVE  TypeOK'
@@ -46,13 +33,13 @@ THEOREM TypeOKInv == Spec => []TypeOK
                    /\ v_eps' >= 0
                    /\ v_delta' \in Int
                    /\ v_delta' >= 0
-        BY <2>1 DEF L1, TypeOK, AbsLapSpec
-      <3>1. v_eps' = v_eps + EpsDef * AbsVal(mem1.a - mem2.a)
-        BY <2>1 DEF L1, AbsLapSpec
+        BY <2>1, AbsLapHoareSpecForInts DEF L1, TypeOK
+      <3>1. v_eps' = v_eps + Epsilon * AbsVal(mem1.a - mem2.a)
+        BY <2>1, AbsLapHoareSpecForInts DEF L1, TypeOK
       <3>2. v_delta' = v_delta
-        BY <2>1 DEF L1, AbsLapSpec
+        BY <2>1, AbsLapHoareSpecForInts DEF L1, TypeOK
       <3> SUFFICES AbsVal(mem1.a - mem2.a) \in Int /\ AbsVal(mem1.a - mem2.a) >= 0
-        BY <3>1, <3>2 DEF TypeOK, EpsDef
+        BY <3>1, <3>2 DEF TypeOK
       <3> QED
         BY DEF AbsVal, TypeOK
     <2>2. CASE L2
@@ -60,13 +47,13 @@ THEOREM TypeOKInv == Spec => []TypeOK
                    /\ v_eps' >= 0
                    /\ v_delta' \in Int
                    /\ v_delta' >= 0
-        BY <2>2 DEF L2, TypeOK, AbsLapSpec
-      <3>1. v_eps' = v_eps + EpsDef * AbsVal(mem1.b - mem2.b)
-        BY <2>2 DEF L2, AbsLapSpec
+        BY <2>2, AbsLapHoareSpecForInts DEF L2, TypeOK
+      <3>1. v_eps' = v_eps + Epsilon * AbsVal(mem1.b - mem2.b)
+        BY <2>2, AbsLapHoareSpecForInts DEF L2, TypeOK
       <3>2. v_delta' = v_delta
-        BY <2>2 DEF L2, AbsLapSpec
+        BY <2>2, AbsLapHoareSpecForInts DEF L2, TypeOK
       <3> SUFFICES AbsVal(mem1.b - mem2.b) \in Int /\ AbsVal(mem1.b - mem2.b) >= 0
-        BY <3>1, <3>2 DEF TypeOK, EpsDef
+        BY <3>1, <3>2 DEF TypeOK
       <3> QED
         BY DEF AbsVal, TypeOK
     <2>3. CASE L3
@@ -109,9 +96,9 @@ THEOREM PhiInv == Phi(mem1, mem2) /\ Spec => []Phi(mem1, mem2)
 
 IInv == 
   /\ pc = "L1"   => (v_eps = 0 /\ v_delta = 0)
-  /\ pc = "L2"   => (v_eps <= EpsDef /\ y1 = y2 /\ v_delta = 0)
-  /\ pc = "L3"   => (v_eps <= 2 * EpsDef /\ y1 = y2 /\ z1 = z2 /\ v_delta = 0)
-  /\ pc = "Done" => (v_eps <= 2 * EpsDef /\ out1 = out2 /\ v_delta = 0)
+  /\ pc = "L2"   => (v_eps <= Epsilon /\ y1 = y2 /\ v_delta = 0)
+  /\ pc = "L3"   => (v_eps <= 2 * Epsilon /\ y1 = y2 /\ z1 = z2 /\ v_delta = 0)
+  /\ pc = "Done" => (v_eps <= 2 * Epsilon /\ out1 = out2 /\ v_delta = 0)
 
 THEOREM IndInv == Phi(mem1, mem2) /\ Spec => []IInv
   <1> SUFFICES ASSUME []TypeOK,
@@ -121,40 +108,41 @@ THEOREM IndInv == Phi(mem1, mem2) /\ Spec => []IInv
   <1>1. Init => IInv
     BY DEF Init, IInv
   <1>2. IInv /\ [Next]_vars => IInv'
+    <2> USE EpsNat
     <2> SUFFICES ASSUME IInv,
                         [Next]_vars
                  PROVE  IInv'
       OBVIOUS
     <2>1. CASE L1
-      <3> SUFFICES v_eps' <= EpsDef /\ y1' = y2' /\ v_delta' = 0
+      <3> SUFFICES v_eps' <= Epsilon /\ y1' = y2' /\ v_delta' = 0
         BY <2>1 DEF L1, IInv
-      <3>1. /\ v_eps' = v_eps + EpsDef * AbsVal(mem1.a - mem2.a)
+      <3>0. Phi(mem1, mem2) /\ TypeOK
+        BY PTL
+      <3>1. /\ v_eps' = v_eps + Epsilon * AbsVal(mem1.a - mem2.a)
             /\ v_delta' = v_delta
             /\ y1' = y2'
-        BY <2>1 DEF L1, AbsLapSpec
+        BY <2>1, <3>0, AbsLapHoareSpecForInts DEF L1, TypeOK
       <3>2. v_eps = 0 /\ v_delta = 0
         BY <2>1 DEF L1, IInv
-      <3>3. Phi(mem1, mem2) /\ TypeOK
-        BY PTL
       <3> SUFFICES AbsVal(mem1.a - mem2.a) \in 0..1
-        BY <3>1, <3>2, <3>3 DEF EpsDef, TypeOK
+        BY <3>1, <3>2, <3>0 DEF TypeOK
       <3> QED
-        BY <3>3 DEF AbsVal, Phi, TypeOK
+        BY <3>0 DEF AbsVal, Phi, TypeOK
     <2>2. CASE L2
-      <3> SUFFICES v_eps' <= 2 * EpsDef /\ z1' = z2' /\ v_delta' = 0
-        BY <2>2 DEF L2, IInv, EpsDef
-      <3>1. /\ v_eps' = v_eps + EpsDef * AbsVal(mem1.b - mem2.b)
+      <3> SUFFICES v_eps' <= 2 * Epsilon /\ z1' = z2' /\ v_delta' = 0
+        BY <2>2 DEF L2, IInv
+      <3>0. Phi(mem1, mem2) /\ TypeOK
+        BY PTL
+      <3>1. /\ v_eps' = v_eps + Epsilon * AbsVal(mem1.b - mem2.b)
             /\ v_delta' = v_delta
             /\ z1' = z2'
-        BY <2>2 DEF L2, AbsLapSpec
-      <3>2. v_eps <= EpsDef /\ v_delta = 0
+        BY <2>2, <3>0, AbsLapHoareSpecForInts DEF L2, TypeOK
+      <3>2. v_eps <= Epsilon /\ v_delta = 0
         BY <2>2 DEF L2, IInv
-      <3>3. Phi(mem1, mem2) /\ TypeOK
-        BY PTL
       <3> SUFFICES AbsVal(mem1.b - mem2.b) \in 0..1
-        BY <3>1, <3>2, <3>3 DEF EpsDef, TypeOK
+        BY <3>1, <3>2, <3>0 DEF TypeOK
       <3> QED
-        BY <3>3 DEF AbsVal, Phi, TypeOK
+        BY <3>0 DEF AbsVal, Phi, TypeOK
     <2>3. CASE L3
       BY <2>3 DEF L3, IInv
     <2>4. CASE Terminating
@@ -167,11 +155,13 @@ THEOREM IndInv == Phi(mem1, mem2) /\ Spec => []IInv
     BY <1>1, <1>2, PTL DEF Spec
 
 ------------------------------------------------------------------------------
-(* Proof of (2 * EpsDef, 0)-DP w.r.t Phi *)
+(* Proof of (2 * Epsilon, 0)-DP w.r.t Phi *)
 
-2EpsDef_0_DP == v_eps <= 2 * EpsDef /\ v_delta = 0 /\ out1 = out2
-
-THEOREM DP == Phi(mem1, mem2) /\ Spec => [](pc = "Done" => 2EpsDef_0_DP)
-  BY IndInv, PTL DEF IInv, 2EpsDef_0_DP
+THEOREM DP == 
+  Phi(mem1, mem2) /\ Spec 
+    => [](pc = "Done" => /\ out1 = out2
+                         /\ v_delta = 0
+                         /\ v_eps <= 2 * Epsilon)
+  BY IndInv, PTL DEF IInv
 
 ==============================================================================

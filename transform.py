@@ -451,22 +451,21 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
     close_indent = " " * prefix_len         # align '}' under 'with'
 
     # ------------------------------------------------------------------
-    # Special case 1: Lap(eps, expr)
-    #    var := Lap(earg, expr)
-    # => with (res \in AbsLap(earg, expr1, expr2, v_eps, v_delta)) {
+    # Special case 1: Lap(expr)
+    #    var := Lap(expr)
+    # => with (res \in AbsLap(expr1, expr2, v_eps, v_delta)) {
     #        var1 := res[1] || var2 := res[2] || v_eps := res[3] || v_delta := res[4]
     #    }
     # ------------------------------------------------------------------
-    if op_name == "Lap" and len(arg_nodes) == 2:
-      earg_node, expr_node = arg_nodes
+    if op_name == "Lap" and len(arg_nodes) == 1:
+      expr_node = arg_nodes[0]
 
-      earg_text = src[earg_node.start_byte:earg_node.end_byte]
       expr1 = rewrite_expr_with_suffix(expr_node, src, base_vars, "1")
       expr2 = rewrite_expr_with_suffix(expr_node, src, base_vars, "2")
 
       line1 = (
           f"{with_indent}with (res \\in AbsLap("
-          f"{earg_text}, {expr1}, {expr2}, v_eps, v_delta)) {{"
+          f"{expr1}, {expr2}, v_eps, v_delta)) {{"
       )
       line2 = (
           f"{body_indent}{lhs_name}1 := res[1] || {lhs_name}2 := res[2] "
@@ -477,25 +476,23 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
       replacement = "\n".join([line1, line2, line3])
 
     # ------------------------------------------------------------------
-    # Special case 2: Exp(eps, score, expr)
-    #    var := Exp(earg, score, expr)
-    # => with (res \in AbsExp(earg, score1, expr1, score2, expr2, v_eps, v_delta)) {
+    # Special case 2: Exp(score, expr)
+    #    var := Exp(score, expr)
+    # => with (res \in AbsExp(score1, expr1, score2, expr2, v_eps, v_delta)) {
     #        var1 := res[1] || var2 := res[2] || v_eps := res[3] || v_delta := res[4]
     #    }
     # ------------------------------------------------------------------
     elif op_name == "Exp" and len(arg_nodes) == 3:
-      earg_node, score_node, expr_node = arg_nodes
-
-      earg_text = src[earg_node.start_byte:earg_node.end_byte]
+      score_node, expr_node = arg_nodes
 
       score1 = rewrite_expr_with_suffix(score_node, src, base_vars, "1")
-      expr1 = rewrite_expr_with_suffix(expr_node,  src, base_vars, "1")
+      expr1 = rewrite_expr_with_suffix(expr_node, src, base_vars, "1")
       score2 = rewrite_expr_with_suffix(score_node, src, base_vars, "2")
-      expr2 = rewrite_expr_with_suffix(expr_node,  src, base_vars, "2")
+      expr2 = rewrite_expr_with_suffix(expr_node, src, base_vars, "2")
 
       line1 = (
           f"{with_indent}with (res \\in AbsExp("
-          f"{earg_text}, {score1}, {expr1}, {score2}, {expr2}, v_eps, v_delta)) {{"
+          f"{score1}, {expr1}, {score2}, {expr2}, v_eps, v_delta)) {{"
       )
       line2 = (
           f"{body_indent}{lhs_name}1 := res[1] || {lhs_name}2 := res[2] "

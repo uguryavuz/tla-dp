@@ -1,12 +1,57 @@
 --------------------------------- MODULE DP ---------------------------------
+LOCAL INSTANCE Integers
+
 (* Laplace & exponential assignment *)
 CONSTANTS
-  Lap(_, _),   (* epsilon, value ->^R value *)
-  Exp(_, _, _) (* epsilon, score, value ->^R value *)
+  Lap(_)   (*  value ->^R value *)
+  \*   Exp(_, _) (* score, value ->^R value *)
 
 (* Abstract Laplace & exponential invocation *)
 CONSTANTS
-  AbsLap(_, _, _, _, _),       (* epsilon, v1, v2, v_eps, v_delta -> (x1, x2, v_eps', v_delta') *)
-  AbsExp(_, _, _, _, _, _, _)  (* epsilon, s1, v1, s2, v2, v_eps, v_delta -> (x1, x2, v_eps', v_delta') *)
+  AbsLap(_, _, _, _)       (* v1, v2, v_eps, v_delta -> (x1, x2, v_eps', v_delta') *)
+  \*   AbsExp(_, _, _, _, _, _)  (* s1, v1, s2, v2, v_eps, v_delta -> (x1, x2, v_eps', v_delta') *)
+
+CONSTANTS
+  Epsilon,
+  Delta
+
+(* Absolute value *)
+AbsVal(x) == IF x < 0 THEN -x ELSE x
+
+(* Assumption of Hoare specification for abstract Laplace invocation *)
+(* For integers *)
+ASSUMPTION AbsLapHoareSpecForInts ==
+  \A x1, x2, v_eps, v_delta \in Int :
+    \A res \in AbsLap(x1, x2, v_eps, v_delta) :
+       /\ res \in Int \X Int \X Int \X Int
+       /\ res[1] = res[2]
+       /\ res[3] = v_eps + Epsilon * AbsVal(x1 - x2)
+       /\ res[4] = v_delta
+
+\* InvLog(d) == CHOOSE n \in Int : TRUE
+
+\* ASSUMPTION AbsLapAccSpecForInts ==
+\*   \A eps, x1, x2, v_eps, v_delta \in Int :
+\*     x1 = x2 =>
+\*     \A res \in AbsLap(x1, x2, v_eps, v_delta) :
+\*        /\ res \in Int \X Int \X Int \X Int
+\*        /\ res[1] = res[2]
+\*        /\ eps * AbsVal(res[1] - x1) <= InvLog(v_delta)
+\*        /\ res[3] = v_eps
+\*        /\ res[4] = v_delta + Delta
+
+
+(* Max *)
+Max(S) == CHOOSE m \in S : \A s \in S : s <= m
+
+\* ASSUMPTION AbsExpHoareSpecForInts == 
+\*   \A v1, v2, v_eps, v_delta \in Int :
+\*     \A s1, s2 \in [Int \X Int -> Int] : s1 = s2 =>
+\*        \A res \in AbsExp(s1, v1, s2, v2, v_eps, v_delta) :
+\*           /\ res \in Int \X Int \X Int \X Int
+\*           /\ res[1] = res[2]
+\*           /\ LET abs_diff_set == {AbsVal(s1[v1, r] - s2[v2, r]) : r \in Int} IN
+\*              res[3] = v_eps + Epsilon * Max(abs_diff_set)
+\*           /\ res[4] = v_delta
 
 =============================================================================

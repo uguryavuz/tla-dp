@@ -1,6 +1,6 @@
 ------------------------------ MODULE SmartSum ------------------------------
 EXTENDS Integers, Sequences, DP
-CONSTANT Eps, Q
+CONSTANT Q
 
 (*--algorithm SmartSum {
   variables 
@@ -17,13 +17,13 @@ CONSTANT Eps, Q
   {
     L1: while (0 < Len(l)) {
           if (Len(l) % Q = 0) {
-            x := Lap(Eps, c + Head(l)); 
+            x := Lap(c + Head(l)); 
             n := x + n;
             next := n;
             c := 0;
             r := Append(r, next);
           } else {
-            x := Lap(Eps, Head(l));
+            x := Lap(Head(l));
             next := next + x;
             c := c + Head(l);
             r := Append(r, next);

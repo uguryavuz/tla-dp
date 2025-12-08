@@ -1,24 +1,11 @@
 --------------------------- MODULE SmartSum_proof ---------------------------
-EXTENDS Integers, DP_Specs, TLAPS
-
-(* To instantiate properly *)
------------------------------------------------------------------------------
-CONSTANTS Lap(_, _), Exp(_, _, _), AbsExp(_, _, _, _, _, _, _) (* left as consts *)
-VARIABLES pc, l1, l2, next1, next2, n1, n2, c1, c2, x1, x2, r1, r2, out1, 
-          out2, v_eps, v_delta
------------------------------------------------------------------------------
+EXTENDS SmartSum_transf, TLAPS
 
 (* Arbitrary epsilon (positive integer) *)
-EpsDef == CHOOSE eps \in Int : eps >= 0
+ASSUMPTION EpsNat == Epsilon \in Nat
 
 (* Arbitrary Q (strictly positive, integer) *)
-Q == CHOOSE q \in Int : 0 < q
-
-(* Instantiate transformed 2xLaplace with EpsDef, Hoare spec of AbsLap *)
-INSTANCE SmartSum_transf
-  WITH 
-    Eps <- EpsDef,
-    AbsLap <- AbsLapSpec
+ASSUMPTION QPosNat == Q \in Nat /\ Q # 0
 
 -----------------------------------------------------------------------------
 (* Type correctness invariant *)
@@ -38,15 +25,14 @@ TypeOK == /\ pc \in {"L1", "L2", "Done"}
           /\ r2 \in Seq(Int)
           /\ out1 \in Seq(Int)
           /\ out2 \in Seq(Int)
-          /\ /\ v_eps \in Int
-             /\ v_eps >= 0
-          /\ /\ v_delta \in Int
-             /\ v_delta >= 0
+          /\ v_eps \in Nat
+          /\ v_delta \in Nat
 
 THEOREM TypeOKInv == Spec => []TypeOK
   <1>1. Init => TypeOK
     BY DEF Init, TypeOK
   <1>2. TypeOK /\ [Next]_vars => TypeOK'
+    <2> USE EpsNat, QPosNat
     <2> SUFFICES ASSUME TypeOK,
                         [Next]_vars
                  PROVE  TypeOK'
@@ -57,15 +43,15 @@ THEOREM TypeOKInv == Spec => []TypeOK
                          /\ v_eps' >= 0
                          /\ v_delta' \in Int
                          /\ v_delta' >= 0
-        BY <2>1 DEF L1, TypeOK, AbsLapSpec
+        BY <2>1, AbsLapHoareSpecForInts DEF L1, TypeOK
       <3>1. CASE Len(l1) % Q = 0
-        <4>1. v_eps' = v_eps + EpsDef * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
-          BY <2>1, <3>1 DEF L1, AbsLapSpec
+        <4>1. v_eps' = v_eps + Epsilon * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
+          BY <2>1, <3>1, AbsLapHoareSpecForInts DEF L1, TypeOK
         <4>2. v_delta' = v_delta
-          BY <2>1, <3>1 DEF L1, AbsLapSpec
+          BY <2>1, <3>1, AbsLapHoareSpecForInts DEF L1, TypeOK
         <4> SUFFICES /\ AbsVal((c1 + Head(l1)) - (c2 + Head(l2))) \in Int
                      /\ AbsVal((c1 + Head(l1)) - (c2 + Head(l2))) >= 0
-          BY <4>1, <4>2 DEF TypeOK, EpsDef
+          BY <4>1, <4>2 DEF TypeOK
         <4>3. Head(l1) \in Int /\ Head(l2) \in Int
           BY <2>1, <3>1 DEF L1, TypeOK
         <4>4. /\ AbsVal((c1 + Head(l1)) - (c2 + Head(l2))) \in Int
@@ -74,13 +60,13 @@ THEOREM TypeOKInv == Spec => []TypeOK
         <4> QED
           BY <4>4
       <3>2. CASE Len(l1) % Q # 0
-        <4>1. v_eps' = v_eps + EpsDef * AbsVal(Head(l1) - Head(l2))
-          BY <2>1, <3>2 DEF L1, AbsLapSpec
+        <4>1. v_eps' = v_eps + Epsilon * AbsVal(Head(l1) - Head(l2))
+          BY <2>1, <3>2, AbsLapHoareSpecForInts DEF L1, TypeOK
         <4>2. v_delta' = v_delta
-          BY <2>1, <3>2 DEF L1, AbsLapSpec
+          BY <2>1, <3>2, AbsLapHoareSpecForInts DEF L1, TypeOK
         <4> SUFFICES /\ AbsVal(Head(l1) - Head(l2)) \in Int
                      /\ AbsVal(Head(l1) - Head(l2)) >= 0
-          BY <4>1, <4>2 DEF TypeOK, EpsDef
+          BY <4>1, <4>2 DEF TypeOK
         <4>3. Head(l1) \in Int /\ Head(l2) \in Int
           BY <2>1, <3>2 DEF L1, TypeOK
         <4>4. /\ AbsVal(Head(l1) - Head(l2)) \in Int
@@ -181,16 +167,17 @@ IInv == /\ r1 = r2
         /\ v_delta = 0
         /\ AbsVal(c1 - c2) <= 1
         /\ l1 # l2 => v_eps = 0
-        /\ c1 # c2 => (l1 = l2 /\ v_eps <= EpsDef)
-        /\ l1 = l2 => v_eps <= 2 * EpsDef
+        /\ c1 # c2 => (l1 = l2 /\ v_eps <= Epsilon)
+        /\ l1 = l2 => v_eps <= 2 * Epsilon
 
 THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
   <1> SUFFICES ASSUME []TypeOK, []Phi(l1, l2) 
                PROVE  Spec => []IInv
     BY TypeOKInv, PhiInv
   <1>1. Init => IInv
-    BY DEF Init, IInv, AbsVal, EpsDef
+    BY EpsNat DEF Init, IInv, AbsVal
   <1>2. IInv /\ [Next]_vars => IInv'
+    <2> USE EpsNat, QPosNat
     <2> SUFFICES ASSUME IInv,
                         [Next]_vars
                  PROVE  IInv'
@@ -202,18 +189,18 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
             /\ next1' = next2'
             /\ n1' = n2'
             /\ v_delta' = 0
-        BY <3>1, <2>1 DEF L1, IInv, TypeOK, Phi, AbsVal, EpsDef, AbsLapSpec
+        BY <3>1, <2>1, AbsLapHoareSpecForInts DEF L1, IInv, TypeOK, Phi, AbsVal
       <3>3. (AbsVal(c1 - c2) <= 1)'
-        BY <3>1, <2>1, SMTT(30) DEF L1, IInv, TypeOK, Phi, AbsVal, EpsDef, AbsLapSpec
+        BY <3>1, <2>1, AbsLapHoareSpecForInts DEF L1, IInv, TypeOK, Phi, AbsVal
       <3> SUFFICES /\ (l1' # l2' => v_eps' = 0)
-                   /\ (c1' # c2' => (l1' = l2' /\ v_eps' <= EpsDef))
-                   /\ (l1' = l2' => v_eps' <= 2 * EpsDef)
+                   /\ (c1' # c2' => (l1' = l2' /\ v_eps' <= Epsilon))
+                   /\ (l1' = l2' => v_eps' <= 2 * Epsilon)
         BY <3>2, <3>3 DEF IInv
       <3> SUFFICES ASSUME /\ 0 < Len(l1)
                           /\ Len(l1) = Len(l2)
                    PROVE  /\ (l1' # l2' => v_eps' = 0)
-                          /\ (c1' # c2' => (l1' = l2' /\ v_eps' <= EpsDef))
-                          /\ (l1' = l2' => v_eps' <= 2 * EpsDef)
+                          /\ (c1' # c2' => (l1' = l2' /\ v_eps' <= Epsilon))
+                          /\ (l1' = l2' => v_eps' <= 2 * Epsilon)
         BY <3>1, <2>1 DEF L1, IInv, Phi
       <3>4. CASE Len(l1) % Q = 0
         <4>1. c1' = c2'
@@ -223,29 +210,29 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
             BY <4>2 DEF IInv
           <5>2. l1' = l2'
             BY <2>1, <5>1 DEF L1
-          <5> SUFFICES v_eps' <= 2 * EpsDef
+          <5> SUFFICES v_eps' <= 2 * Epsilon
             BY <4>1, <5>2
-          <5>3. v_eps <= EpsDef
+          <5>3. v_eps <= Epsilon
             BY <4>2 DEF IInv
-          <5>4. v_eps' = v_eps + EpsDef * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
-            BY <2>1, <3>4 DEF L1, AbsLapSpec
-          <5>5. v_eps' = v_eps + EpsDef * AbsVal(c1 - c2)
+          <5>4. v_eps' = v_eps + Epsilon * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
+            BY <2>1, <3>1, <3>4, AbsLapHoareSpecForInts DEF L1, TypeOK
+          <5>5. v_eps' = v_eps + Epsilon * AbsVal(c1 - c2)
             BY <3>1, <5>1, <5>4 DEF TypeOK
           <5> SUFFICES AbsVal(c1 - c2) <= 1
-            BY <3>1, <5>3, <5>5 DEF EpsDef, AbsVal, TypeOK
+            BY <3>1, <5>3, <5>5 DEF AbsVal, TypeOK
           <5> QED
             BY DEF IInv
         <4>3. CASE c1 = c2
           <5>1. CASE l1 = l2
             <6>1. l1' = l2'
               BY <2>1, <5>1 DEF L1
-            <6> SUFFICES v_eps' <= 2 * EpsDef
+            <6> SUFFICES v_eps' <= 2 * Epsilon
               BY <4>1, <6>1
-            <6>2. v_eps' = v_eps + EpsDef * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
-              BY <2>1, <3>4 DEF L1, AbsLapSpec
+            <6>2. v_eps' = v_eps + Epsilon * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
+              BY <2>1, <3>1, <3>4, AbsLapHoareSpecForInts DEF L1, TypeOK
             <6>3. v_eps' = v_eps
-              BY <3>1, <4>3, <5>1, <6>2 DEF TypeOK, AbsVal, EpsDef
-            <6> SUFFICES v_eps <= 2 * EpsDef
+              BY <3>1, <4>3, <5>1, <6>2 DEF TypeOK, AbsVal
+            <6> SUFFICES v_eps <= 2 * Epsilon
               BY <6>3
             <6> QED
               BY <5>1 DEF IInv
@@ -261,14 +248,14 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
                 BY <3>1, <7>1 DEF TypeOK
               <7>3. l1' = l2'
                 BY <2>1, <7>2 DEF L1
-              <7> SUFFICES v_eps' <= 2 * EpsDef
+              <7> SUFFICES v_eps' <= 2 * Epsilon
                 BY <4>1, <7>3
               <7>4. v_eps = 0
                 BY <5>2 DEF IInv
-              <7>5. v_eps' = v_eps + EpsDef * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
-                BY <2>1, <3>4 DEF L1, AbsLapSpec
+              <7>5. v_eps' = v_eps + Epsilon * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
+                BY <2>1, <3>1, <3>4, AbsLapHoareSpecForInts DEF L1, TypeOK
               <7> SUFFICES AbsVal((c1 + Head(l1)) - (c2 + Head(l2))) <= 2
-                BY <3>1, <7>4, <7>5 DEF EpsDef, AbsVal, TypeOK
+                BY <3>1, <7>4, <7>5 DEF AbsVal, TypeOK
               <7> SUFFICES AbsVal(Head(l1) - Head(l2)) <= 2
                 BY <3>1, <4>3 DEF TypeOK, AbsVal
               <7> SUFFICES AbsVal(l1[1] - l2[1]) <= 1
@@ -279,13 +266,13 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
               <7>1. Head(l1) = Head(l2)
                 BY <3>1, <6>1, <6>3 DEF TypeOK
               <7> SUFFICES v_eps' = 0
-                BY <4>1 DEF EpsDef
+                BY <4>1 
               <7>2. AbsVal((c1 + Head(l1)) - (c2 + Head(l2))) = 0 
                 BY <3>1, <4>3, <7>1 DEF TypeOK, AbsVal
-              <7>3. v_eps' = v_eps + EpsDef * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
-                BY <2>1, <3>4 DEF L1, AbsLapSpec
+              <7>3. v_eps' = v_eps + Epsilon * AbsVal((c1 + Head(l1)) - (c2 + Head(l2)))
+                BY <2>1, <3>1, <3>4, AbsLapHoareSpecForInts DEF L1, TypeOK
               <7>4. v_eps' = v_eps
-                BY <3>1, <7>2, <7>3 DEF EpsDef, TypeOK
+                BY <3>1, <7>2, <7>3 DEF TypeOK
               <7>5. v_eps = 0
                 BY <5>2 DEF IInv
               <7> QED
@@ -297,25 +284,25 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
         <4> QED 
           BY <4>2, <4>3
       <3>5. CASE Len(l1) % Q # 0
-        <4>1. v_eps' = v_eps + EpsDef * AbsVal(Head(l1) - Head(l2))
-          BY <2>1, <3>5 DEF L1, AbsLapSpec
+        <4>1. v_eps' = v_eps + Epsilon * AbsVal(Head(l1) - Head(l2))
+          BY <2>1, <3>1, <3>5, AbsLapHoareSpecForInts DEF L1, TypeOK
         <4>2. CASE c1 # c2
-          <5>1. l1 = l2 /\ v_eps <= EpsDef
+          <5>1. l1 = l2 /\ v_eps <= Epsilon
             BY <4>2 DEF IInv
           <5>2. l1' = l2'
             BY <2>1, <5>1 DEF L1
           <5>3. TypeOK'
             BY PTL
-          <5> SUFFICES v_eps' <= EpsDef 
-            BY <3>1, <5>2, <5>3 DEF EpsDef, TypeOK
+          <5> SUFFICES v_eps' <= Epsilon 
+            BY <3>1, <5>2, <5>3 DEF TypeOK
           <5>4. v_eps' = v_eps
-            BY <3>1, <4>1, <5>1 DEF TypeOK, AbsVal, EpsDef
+            BY <3>1, <4>1, <5>1 DEF TypeOK, AbsVal
           <5> QED
             BY <5>1, <5>4
         <4>3. CASE c1 = c2
           <5>1. CASE l1 = l2
             <6>1. v_eps' = v_eps
-              BY <3>1, <4>1, <5>1 DEF AbsVal, TypeOK, EpsDef
+              BY <3>1, <4>1, <5>1 DEF AbsVal, TypeOK
             <6> QED
               BY <2>1, <5>1, <6>1 DEF IInv, L1
           <5>2. CASE l1 # l2
@@ -334,21 +321,21 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
                 BY <2>1, <7>2 DEF L1
               <7>4. TypeOK'
                 BY PTL
-              <7> SUFFICES v_eps' <= EpsDef 
-                BY <3>1, <7>3, <7>4 DEF TypeOK, EpsDef
+              <7> SUFFICES v_eps' <= Epsilon 
+                BY <3>1, <7>3, <7>4 DEF TypeOK
               <7>5. AbsVal(Head(l1) - Head(l2)) <= 1
                 BY <3>1, <6>2 DEF TypeOK, AbsVal
               <7> QED
-                BY <3>1, <4>1, <6>1, <7>5 DEF TypeOK, AbsVal, EpsDef
+                BY <3>1, <4>1, <6>1, <7>5 DEF TypeOK, AbsVal
             <6>4. CASE i \in 2..Len(l1)
               <7>1. Head(l1) = Head(l2)
                 BY <3>1, <6>2, <6>4 DEF TypeOK
               <7>2. TypeOK'
                 BY PTL
               <7>3. v_eps' = 0
-                BY <3>1, <4>1, <6>1, <7>1 DEF AbsVal, TypeOK, EpsDef
+                BY <3>1, <4>1, <6>1, <7>1 DEF AbsVal, TypeOK
               <7> SUFFICES c1' # c2' => l1' = l2'
-                BY <3>1, <7>2, <7>3 DEF EpsDef, AbsVal, TypeOK
+                BY <3>1, <7>2, <7>3 DEF AbsVal, TypeOK
               <7> SUFFICES ASSUME c1' # c2'
                            PROVE  FALSE
                 OBVIOUS
@@ -376,11 +363,14 @@ THEOREM IndInv == Phi(l1, l2) /\ Spec => []IInv
     BY <1>1, <1>2, PTL DEF Spec
                
 ------------------------------------------------------------------------------
-(* Proof of (2 * EpsDef, 0)-DP w.r.t Phi *)
+(* Proof of (2 * Epsilon, 0)-DP w.r.t Phi *)
 
-2EpsDef_0_DP == v_eps <= 2 * EpsDef /\ v_delta = 0 /\ out1 = out2
-
-THEOREM DP == Phi(l1, l2) /\ Spec => [](pc = "Done" => 2EpsDef_0_DP)
+THEOREM DP == 
+  (Phi(l1, l2) /\ Spec) 
+    => [](pc = "Done" => /\ out1 = out2
+                         /\ v_delta = 0
+                         /\ v_eps <= 2 * Epsilon)                      
+  <1> DEFINE 2EpsDef_0_DP == v_eps <= 2 * Epsilon /\ v_delta = 0 /\ out1 = out2
   <1> SUFFICES ASSUME []TypeOK,
                       []Phi(l1, l2),
                       []IInv
@@ -390,16 +380,16 @@ THEOREM DP == Phi(l1, l2) /\ Spec => [](pc = "Done" => 2EpsDef_0_DP)
     BY DEF Init
   <1>2. (pc = "Done" => 2EpsDef_0_DP) /\ [Next]_vars => (pc = "Done" => 2EpsDef_0_DP)'
     <2>1. CASE L1
-      BY <2>1 DEF L1, 2EpsDef_0_DP
+      BY <2>1 DEF L1
     <2>2. CASE L2
       <3>1. TypeOK /\ IInv
         BY PTL
       <3> QED
-        BY <2>2, <3>1 DEF L2, 2EpsDef_0_DP, TypeOK, IInv, EpsDef
+        BY <2>2, <3>1, EpsNat DEF L2, TypeOK, IInv
     <2>3. CASE Terminating
-      BY <2>3 DEF Terminating, vars, 2EpsDef_0_DP
+      BY <2>3 DEF Terminating, vars
     <2>4. CASE UNCHANGED vars
-      BY <2>4 DEF vars, 2EpsDef_0_DP
+      BY <2>4 DEF vars
     <2> QED
       BY <2>1, <2>2, <2>3, <2>4 DEF Next
   <1> QED

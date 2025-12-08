@@ -1,6 +1,5 @@
 ------------------------------ MODULE 2xLaplace ------------------------------
 EXTENDS Integers, DP
-CONSTANT Eps
 
 (*--algorithm 2xLaplace {
   variables 
@@ -12,8 +11,8 @@ CONSTANT Eps
     (* return register *) 
     out = <<0, 0>>;
   {
-    L1: y := Lap(Eps, mem.a); 
-    L2: z := Lap(Eps, mem.b);
+    L1: y := Lap(mem.a); 
+    L2: z := Lap(mem.b);
     L3: out := <<y, z>>; 
   }
 } *)
