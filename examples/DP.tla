@@ -1,6 +1,26 @@
 --------------------------------- MODULE DP ---------------------------------
 LOCAL INSTANCE Integers
 
+-----------------------------------------------------------------------------
+(* Math *)
+
+(* Absolute value *)
+AbsVal(x) == IF x < 0 THEN -x ELSE x
+
+(* Max *)
+Max(S) == CHOOSE m \in S : \A s \in S : s <= m
+
+(* Placeholder *)
+Real == {}
+
+(* 0 is real *)
+ASSUMPTION ZeroIsReal == 0 \in Real
+
+(* Neglog *)
+NegLog == CHOOSE f \in [{r \in Real : r > 0} -> Real] : TRUE
+
+-----------------------------------------------------------------------------
+
 (* Laplace & exponential assignment *)
 CONSTANTS
   Lap(_)   (*  value ->^R value *)
@@ -15,9 +35,6 @@ CONSTANTS
   Epsilon,
   Delta
 
-(* Absolute value *)
-AbsVal(x) == IF x < 0 THEN -x ELSE x
-
 (* Assumption of Hoare specification for abstract Laplace invocation *)
 (* For integers *)
 ASSUMPTION AbsLapHoareSpecForInts ==
@@ -28,7 +45,23 @@ ASSUMPTION AbsLapHoareSpecForInts ==
        /\ res[3] = v_eps + Epsilon * AbsVal(x1 - x2)
        /\ res[4] = v_delta
 
-\* InvLog(d) == CHOOSE n \in Int : TRUE
+ASSUMPTION AbsLapHoareSpecForReals ==
+  \A x1, x2, v_eps, v_delta \in Real :
+    \A res \in AbsLap(x1, x2, v_eps, v_delta) :
+       /\ res \in Real \X Real \X Real \X Real
+       /\ res[1] = res[2]
+       /\ res[3] = v_eps + Epsilon * AbsVal(x1 - x2)
+       /\ res[4] = v_delta
+
+ASSUMPTION AbsLapAccSpecForReals ==
+  \A x1, x2, v_eps, v_delta \in Real :
+    x1 = x2 =>
+    \A res \in AbsLap(x1, x2, v_eps, v_delta) :
+       /\ res \in Real \X Real \X Real \X Real
+       /\ res[1] = res[2]
+       /\ Epsilon * AbsVal(res[1] - x1) <= NegLog[Delta]
+       /\ res[3] = v_eps
+       /\ res[4] = v_delta + Delta
 
 \* ASSUMPTION AbsLapAccSpecForInts ==
 \*   \A eps, x1, x2, v_eps, v_delta \in Int :
@@ -39,10 +72,6 @@ ASSUMPTION AbsLapHoareSpecForInts ==
 \*        /\ eps * AbsVal(res[1] - x1) <= InvLog(v_delta)
 \*        /\ res[3] = v_eps
 \*        /\ res[4] = v_delta + Delta
-
-
-(* Max *)
-Max(S) == CHOOSE m \in S : \A s \in S : s <= m
 
 \* ASSUMPTION AbsExpHoareSpecForInts == 
 \*   \A v1, v2, v_eps, v_delta \in Int :

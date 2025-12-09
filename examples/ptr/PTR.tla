@@ -2,11 +2,20 @@
 EXTENDS Integers, DP
 CONSTANT DBDomain, QOutDomain
 
-Dist == CHOOSE f \in [DBDomain \X DBDomain -> Nat] : TRUE
-Query == CHOOSE q \in [DBDomain -> QOutDomain] : TRUE
-DTI(q, d) == Max({x \in Nat : \A d_pr \in DBDomain : Dist[d, d_pr] <= x => q[d_pr] = q[d]})
-DummyQOut == CHOOSE qo \in QOutDomain : TRUE
+(* Distance function *)
+DistDomain == [DBDomain \X DBDomain -> Real]
+Dist == CHOOSE f \in DistDomain : TRUE
 
+(* Query function *)
+QueryDomain == [DBDomain -> QOutDomain]
+Query == CHOOSE q \in QueryDomain : TRUE
+
+(* Distance to instability *)
+\* DTI(q, d) == Max({x \in Nat : \A d_pr \in DBDomain : Dist[d, d_pr] <= x => q[d_pr] = q[d]})
+DTI == CHOOSE dti \in [QueryDomain \X DistDomain -> Real] : TRUE
+
+(* Dummy query output *)
+DummyQOut == CHOOSE qo \in QOutDomain : TRUE
 
 (*--algorithm PTR {
   variables
@@ -18,12 +27,12 @@ DummyQOut == CHOOSE qo \in QOutDomain : TRUE
     (* return register *)
     out \in QOutDomain;
   {
-    L1: x := DTI(Query, d);
+    L1: x := DTI[Query, d];
     L2: y := Lap(x);
-    L3: if (Epsilon * AbsVal(y) > InvLog(Delta)) {
-          out := Query[d];
+    L3: if (Epsilon * AbsVal(y) > NegLog[Delta]) {
+    L4:   out := Query[d];
         } else {
-          out := DummyQOut;
+    L5:   out := DummyQOut;
         };
   }
 } *)
