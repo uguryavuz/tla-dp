@@ -4,7 +4,7 @@ EXTENDS Integers, DP
 (*--algorithm 2xLaplace {
   variables 
     (* inputs *)
-    mem \in [a: Int, b: Int],
+    mem \in [a: Value, b: Value],
     (* registers *)
     y = 0,
     z = 0,

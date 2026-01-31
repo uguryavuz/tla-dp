@@ -5,7 +5,7 @@ CONSTANT Q
 (*--algorithm SmartSum {
   variables 
     (* inputs *)
-    l \in Seq(Int),
+    l \in Seq(Value),
     (* registers *)
     next = 0,
     n = 0,

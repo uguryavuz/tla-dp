@@ -4,7 +4,7 @@ EXTENDS Integers, DP
 (*--algorithm 2xLaplace {
     variables
     (* inputs *)
-    mem1 \in [a: Int, b: Int], mem2 \in [a: Int, b: Int],
+    mem1 \in [a: Value, b: Value], mem2 \in [a: Value, b: Value],
     (* registers *)
     y1 = 0, y2 = 0,
     z1 = 0, z2 = 0,
@@ -23,14 +23,14 @@ EXTENDS Integers, DP
     L3: out1 := <<y1, z1>> || out2 := <<y2, z2>>; 
   }
 } *)
-\* BEGIN TRANSLATION (chksum(pcal) = "50854810" /\ chksum(tla) = "dbecb885")
+\* BEGIN TRANSLATION (chksum(pcal) = "b9518c7c" /\ chksum(tla) = "bb2864c2")
 VARIABLES pc, mem1, mem2, y1, y2, z1, z2, out1, out2, v_eps, v_delta
 
 vars == << pc, mem1, mem2, y1, y2, z1, z2, out1, out2, v_eps, v_delta >>
 
 Init == (* Global variables *)
-        /\ mem1 \in [a: Int, b: Int]
-        /\ mem2 \in [a: Int, b: Int]
+        /\ mem1 \in [a: Value, b: Value]
+        /\ mem2 \in [a: Value, b: Value]
         /\ y1 = 0
         /\ y2 = 0
         /\ z1 = 0

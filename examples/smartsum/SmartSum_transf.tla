@@ -5,7 +5,7 @@ CONSTANT Q
 (*--algorithm SmartSum {
     variables
     (* inputs *)
-    l1 \in Seq(Int), l2 \in Seq(Int),
+    l1 \in Seq(Value), l2 \in Seq(Value),
     (* registers *)
     next1 = 0, next2 = 0,
     n1 = 0, n2 = 0,
@@ -40,7 +40,7 @@ CONSTANT Q
     L2: out1 := r1 || out2 := r2; 
   }
 } *)
-\* BEGIN TRANSLATION (chksum(pcal) = "992a283f" /\ chksum(tla) = "471bf037")
+\* BEGIN TRANSLATION (chksum(pcal) = "5891aff7" /\ chksum(tla) = "37b4b9ad")
 VARIABLES pc, l1, l2, next1, next2, n1, n2, c1, c2, x1, x2, r1, r2, out1, 
           out2, v_eps, v_delta
 
@@ -48,8 +48,8 @@ vars == << pc, l1, l2, next1, next2, n1, n2, c1, c2, x1, x2, r1, r2, out1,
            out2, v_eps, v_delta >>
 
 Init == (* Global variables *)
-        /\ l1 \in Seq(Int)
-        /\ l2 \in Seq(Int)
+        /\ l1 \in Seq(Value)
+        /\ l2 \in Seq(Value)
         /\ next1 = 0
         /\ next2 = 0
         /\ n1 = 0
