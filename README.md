@@ -4,14 +4,15 @@ Differential privacy verification in TLA+, via self-products (Barthe et al., 201
 
 ## What this repo contains
 - **`DP.tla`**: Abstract interfaces for DP mechanisms (e.g., `AbsLap`, `AbsExp`) plus reusable definitions/lemmas (e.g., `AbsLapHoareSpec`, `AbsLapAccSpec`).
-- **`transform.py`**: Self-product transformation for PlusCal programs (duplicates variables, synchronizes control flow, replaces mechanism calls with `Abs*` invocations), implemented using [tree-sitter-tlaplus](https://github.com/tlaplus-community/tree-sitter-tlaplus)
-- **`2xLaplace/`**: Minimal example, including:
-  - original program,
-  - transformed spec,
-  - TLAPS proof,
-  - model-checking module and TLC configuration to test too-small privacy budgets as counterexample traces.
-- **`SmartSum/`**: Continual-release running-sum case study. **Under refactoring** 🛠️ 
-- **`PTR/`**: Propose-Test-Release case study (approximate DP using an accuracy rule for Laplace). **Under refactoring** 🛠️ 
+- **`transform.py`**: Self-product transformation for PlusCal programs (duplicates variables, synchronizes control flow, replaces mechanism calls with `Abs*` invocations), implemented using [tree-sitter-tlaplus](https://github.com/tlaplus-community/tree-sitter-tlaplus).
+- **`examples/`**: Case studies.
+  - **`2xLaplace/`**: Minimal example, including:
+    - original program,
+    - transformed spec,
+    - TLAPS proof,
+    - model-checking module and TLC configuration to test too-small privacy budgets as counterexample traces.
+  - **`SmartSum/`**: Continual-release running-sum case study. **Under refactoring** 🛠️ 
+  - **`PTR/`**: Propose-Test-Release case study (approximate DP using an accuracy rule for Laplace). **Under refactoring** 🛠️ 
 
 ## How to use
 1. Write a PlusCal algorithm with mechanism calls written using uninterpreted constants (e.g., `Lap(_)`, `Exp(_,_)`).
