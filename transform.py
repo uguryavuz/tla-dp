@@ -406,12 +406,15 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
           with (res ∈ AbsLap(eps, expr¹, expr², v_eps, v_delta)) {
             v1 := res[1] || v2 := res[2] || v_eps := res[3] || v_delta := res[4]
           }
+      The eps argument is passed through unchanged (it is a constant, not
+      a program variable).
 
     • Special Exp case:  v := Exp(eps, score, expr)
           becomes
           with (res ∈ AbsExp(eps, score¹, expr¹, score², expr², v_eps, v_delta)) {
             v1 := res[1] || v2 := res[2] || v_eps := res[3] || v_delta := res[4]
           }
+      Again, eps is passed through unchanged.
   """
 
   assert my_tree.source is not None
@@ -451,21 +454,22 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
     close_indent = " " * prefix_len         # align '}' under 'with'
 
     # ------------------------------------------------------------------
-    # Special case 1: Lap(expr)
-    #    var := Lap(expr)
-    # => with (res \in AbsLap(expr1, expr2, v_eps, v_delta)) {
+    # Special case 1: Lap(eps, expr)
+    #    var := Lap(eps, expr)
+    # => with (res \in AbsLap(eps, expr1, expr2, v_eps, v_delta)) {
     #        var1 := res[1] || var2 := res[2] || v_eps := res[3] || v_delta := res[4]
     #    }
     # ------------------------------------------------------------------
-    if op_name == "Lap" and len(arg_nodes) == 1:
-      expr_node = arg_nodes[0]
+    if op_name == "Lap" and len(arg_nodes) == 2:
+      eps_node, expr_node = arg_nodes
 
+      eps_text = src[eps_node.start_byte:eps_node.end_byte]
       expr1 = rewrite_expr_with_suffix(expr_node, src, base_vars, "1")
       expr2 = rewrite_expr_with_suffix(expr_node, src, base_vars, "2")
 
       line1 = (
           f"{with_indent}with (res \\in AbsLap("
-          f"{expr1}, {expr2}, v_eps, v_delta)) {{"
+          f"{eps_text}, {expr1}, {expr2}, v_eps, v_delta)) {{"
       )
       line2 = (
           f"{body_indent}{lhs_name}1 := res[1] || {lhs_name}2 := res[2] "
@@ -476,15 +480,16 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
       replacement = "\n".join([line1, line2, line3])
 
     # ------------------------------------------------------------------
-    # Special case 2: Exp(score, expr)
-    #    var := Exp(score, expr)
-    # => with (res \in AbsExp(score1, expr1, score2, expr2, v_eps, v_delta)) {
+    # Special case 2: Exp(eps, score, expr)
+    #    var := Exp(eps, score, expr)
+    # => with (res \in AbsExp(eps, score1, expr1, score2, expr2, v_eps, v_delta)) {
     #        var1 := res[1] || var2 := res[2] || v_eps := res[3] || v_delta := res[4]
     #    }
     # ------------------------------------------------------------------
     elif op_name == "Exp" and len(arg_nodes) == 3:
-      score_node, expr_node = arg_nodes
+      eps_node, score_node, expr_node = arg_nodes
 
+      eps_text = src[eps_node.start_byte:eps_node.end_byte]
       score1 = rewrite_expr_with_suffix(score_node, src, base_vars, "1")
       expr1 = rewrite_expr_with_suffix(expr_node, src, base_vars, "1")
       score2 = rewrite_expr_with_suffix(score_node, src, base_vars, "2")
@@ -492,7 +497,7 @@ def transform_pcal_assigns_and_reparse(my_tree: MyTree, base_vars: set[str]) -> 
 
       line1 = (
           f"{with_indent}with (res \\in AbsExp("
-          f"{score1}, {expr1}, {score2}, {expr2}, v_eps, v_delta)) {{"
+          f"{eps_text}, {score1}, {expr1}, {score2}, {expr2}, v_eps, v_delta)) {{"
       )
       line2 = (
           f"{body_indent}{lhs_name}1 := res[1] || {lhs_name}2 := res[2] "

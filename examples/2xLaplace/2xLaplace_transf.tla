@@ -1,6 +1,8 @@
 ------------------------------ MODULE 2xLaplace_transf ------------------------------
 EXTENDS Integers, DP
 
+CONSTANT Epsilon
+
 (*--algorithm 2xLaplace {
     variables
     (* inputs *)
@@ -14,16 +16,16 @@ EXTENDS Integers, DP
     v_eps = 0,
     v_delta = 0;
   {
-    L1: with (res \in AbsLap(mem1.a, mem2.a, v_eps, v_delta)) {
+    L1: with (res \in AbsLap(Epsilon, mem1.a, mem2.a, v_eps, v_delta)) {
           y1 := res[1] || y2 := res[2] || v_eps := res[3] || v_delta := res[4]
         }; 
-    L2: with (res \in AbsLap(mem1.b, mem2.b, v_eps, v_delta)) {
+    L2: with (res \in AbsLap(Epsilon, mem1.b, mem2.b, v_eps, v_delta)) {
           z1 := res[1] || z2 := res[2] || v_eps := res[3] || v_delta := res[4]
         };
     L3: out1 := <<y1, z1>> || out2 := <<y2, z2>>; 
   }
 } *)
-\* BEGIN TRANSLATION (chksum(pcal) = "b9518c7c" /\ chksum(tla) = "bb2864c2")
+\* BEGIN TRANSLATION (chksum(pcal) = "89f08ab4" /\ chksum(tla) = "3e974634")
 VARIABLES pc, mem1, mem2, y1, y2, z1, z2, out1, out2, v_eps, v_delta
 
 vars == << pc, mem1, mem2, y1, y2, z1, z2, out1, out2, v_eps, v_delta >>
@@ -42,7 +44,7 @@ Init == (* Global variables *)
         /\ pc = "L1"
 
 L1 == /\ pc = "L1"
-      /\ \E res \in AbsLap(mem1.a, mem2.a, v_eps, v_delta):
+      /\ \E res \in AbsLap(Epsilon, mem1.a, mem2.a, v_eps, v_delta):
            /\ v_delta' = res[4]
            /\ v_eps' = res[3]
            /\ y1' = res[1]
@@ -51,7 +53,7 @@ L1 == /\ pc = "L1"
       /\ UNCHANGED << mem1, mem2, z1, z2, out1, out2 >>
 
 L2 == /\ pc = "L2"
-      /\ \E res \in AbsLap(mem1.b, mem2.b, v_eps, v_delta):
+      /\ \E res \in AbsLap(Epsilon, mem1.b, mem2.b, v_eps, v_delta):
            /\ v_delta' = res[4]
            /\ v_eps' = res[3]
            /\ z1' = res[1]

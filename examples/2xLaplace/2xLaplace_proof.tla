@@ -2,13 +2,21 @@
 EXTENDS 2xLaplace_transf, TLAPS
 
 (* Assume domain of values is reals *)
+(***************************************************************************)
+(* Note: Why we do not instantiate 2xLaplace_transf with Value <- Int,     *)
+(* and instead extend the module and add this assumption is because        *)
+(* we would otherwise need to declare the variables, and all the constants *)
+(* incl. those that are to be left opaque (bsLap, Lap, AbsExp and Exp)     *)
+(* which creates unnecessary clutter.                                      *)
+(***************************************************************************)
+
 ASSUMPTION ValDef == 
-    Value = Real
+  Value = Int
 
 (* Arbitrary epsilon (positive real) *)
 ASSUMPTION EpsDef == 
-    /\ Epsilon \in Real
-    /\ Epsilon > 0
+  /\ Epsilon \in Real
+  /\ Epsilon > 0
 
 ------------------------------------------------------------------------------
 (******************************)
@@ -39,32 +47,32 @@ THEOREM TypeOKInv == Spec => []TypeOK
       OBVIOUS
     <2>1. CASE L1
       <3> SUFFICES v_eps' \in Real /\ v_eps' >= 0
-        BY <2>1, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
+        BY <2>1, EpsDef, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
       <3>1. v_eps' = v_eps + Epsilon * AbsVal(mem1.a - mem2.a)
-        BY <2>1, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
+        BY <2>1, EpsDef, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
       <3>2. v_eps \in Real /\ v_eps >= 0
         BY DEF TypeOK
       <3>3. Epsilon \in Real /\ Epsilon > 0
         BY EpsDef
-      <3>4. mem1.a \in Real /\ mem2.a \in Real
-        BY ValDef DEF TypeOK
+      <3>4. mem1.a \in Value /\ mem2.a \in Value
+        BY DEF TypeOK
       <3> QED
-        \* BY <3>1, <3>2, <3>3, <3>4 DEF AbsVal
+        \* BY <3>1, <3>2, <3>3, <3>4, ValDef DEF AbsVal
         \* omitted due to lack of real arithmetic support
         OMITTED
     <2>2. CASE L2
       <3> SUFFICES v_eps' \in Real /\ v_eps' >= 0
-        BY <2>2, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
+        BY <2>2, EpsDef, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
       <3>1. v_eps' = v_eps + Epsilon * AbsVal(mem1.b - mem2.b)
-        BY <2>2, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
+        BY <2>2, EpsDef, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
       <3>2. v_eps \in Real /\ v_eps >= 0
         BY DEF TypeOK
       <3>3. Epsilon \in Real /\ Epsilon > 0
         BY EpsDef
-      <3>4. mem1.b \in Real /\ mem2.b \in Real
-        BY ValDef DEF TypeOK
+      <3>4. mem1.b \in Value /\ mem2.b \in Value
+        BY DEF TypeOK
       <3> QED
-        \* BY <3>1, <3>2, <3>3, <3>4 DEF AbsVal
+        \* BY <3>1, <3>2, <3>3, <3>4, ValDef DEF AbsVal
         \* omitted due to lack of real arithmetic support
         OMITTED
     <2>3. CASE L3
@@ -140,17 +148,17 @@ THEOREM IndInv == PhiSpec => []IInv
       <3>1. /\ v_eps' = v_eps + Epsilon * AbsVal(mem1.a - mem2.a)
             /\ v_delta' = v_delta
             /\ y1' = y2'
-        BY <2>1, <3>0, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
+        BY <2>1, <3>0, EpsDef, AbsLapHoareSpecDef DEF L1, TypeOK, AbsLapHoareSpec
       <3>2. v_eps = 0 /\ v_delta = 0
         BY <2>1 DEF L1, IInv
       <3> SUFFICES 0 + Epsilon * AbsVal(mem1.a - mem2.a) <= Epsilon
         BY <3>1, <3>2
       <3>3. Epsilon \in Real /\ Epsilon > 0
         BY EpsDef
-      <3>4. mem1.a \in Real /\ mem2.a \in Real
-        BY <3>0, ValDef DEF TypeOK
+      <3>4. mem1.a \in Value /\ mem2.a \in Value
+        BY <3>0 DEF TypeOK
       <3> QED
-        \* BY <3>3, <3>4 DEF AbsVal
+        \* BY <3>3, <3>4, ValDef DEF AbsVal
         \* omitted due to lack of real arithmetic support
         OMITTED
     <2>2. CASE L2
@@ -161,7 +169,7 @@ THEOREM IndInv == PhiSpec => []IInv
       <3>1. /\ v_eps' = v_eps + Epsilon * AbsVal(mem1.b - mem2.b)
             /\ v_delta' = v_delta
             /\ z1' = z2'
-        BY <2>2, <3>0, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
+        BY <2>2, <3>0, EpsDef, AbsLapHoareSpecDef DEF L2, TypeOK, AbsLapHoareSpec
       <3>2. v_delta = 0
         BY <2>2 DEF L2, IInv
       <3> SUFFICES v_eps + Epsilon * AbsVal(mem1.b - mem2.b) <= 2 * Epsilon
@@ -170,10 +178,10 @@ THEOREM IndInv == PhiSpec => []IInv
         BY EpsDef
       <3>4. 0 <= v_eps /\ v_eps <= Epsilon
         BY <2>2, <3>0 DEF L2, IInv, TypeOK
-      <3>5. mem1.b \in Real /\ mem2.b \in Real
-        BY <3>0, ValDef DEF TypeOK
+      <3>5. mem1.b \in Value /\ mem2.b \in Value
+        BY <3>0 DEF TypeOK
       <3> QED
-        \* BY <3>0 DEF AbsVal, Phi, TypeOK
+        \* BY <3>0 DEF AbsVal, Phi, TypeOK, ValDef
         \* omitted due to lack of real arithmetic support
         OMITTED
     <2>3. CASE L3
@@ -201,8 +209,7 @@ DP ==
     /\ v_delta = 0
     /\ v_eps <= 2 * Epsilon
 
-THEOREM DPTheorem == 
-    PhiSpec => []DP
+THEOREM DPTheorem == PhiSpec => []DP
   BY IndInv, PTL DEF IInv, DP
 
 ==============================================================================

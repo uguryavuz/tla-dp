@@ -88,11 +88,11 @@ LEMMA AbsLapHoareSpecDef ==
 (*****************************************************************************)
 (* Accuracy specification of the abstract Laplace mechanism procedure.       *)
 (* Requires x1 = x2 as precondition. Restricts output to values within T     *)
-(* of x1 and increments v_delta by LapTail(eps, T).                          *)
+(* of x1 and increments v_delta by LapTail[eps, T].                          *)
 (*****************************************************************************)
 AbsLapAccSpec(eps, T, x1, x2, v_eps, v_delta) == 
   IF x1 = x2 THEN
-    LET new_delta == v_delta + LapTail(eps, T) IN
+    LET new_delta == v_delta + LapTail[eps, T] IN
     {<<n, n, v_eps, new_delta>> : 
       n \in {m \in Value : AbsVal(m - x1) <= T}} 
   ELSE {}
