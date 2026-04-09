@@ -41,7 +41,6 @@ BoundedSeq(S) == UNION {[1..n -> S] : n \in 0..SeqLimit}
 QValue == 2
 
 EpsConst == 1
-DelConst == 0
-BoundedInts == -3..3
+BoundedInts == -2..2
 
 ===============================================================================

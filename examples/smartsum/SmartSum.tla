@@ -1,6 +1,7 @@
 ------------------------------ MODULE SmartSum ------------------------------
 EXTENDS Integers, Sequences, DP
-CONSTANT Q
+
+CONSTANTS Q, Epsilon
 
 (*--algorithm SmartSum {
   variables 
@@ -16,14 +17,14 @@ CONSTANT Q
     out = <<>>;
   {
     L1: while (0 < Len(l)) {
-          if (Len(l) % Q = 0) {
-            x := Lap(c + Head(l)); 
+          if (Len(l) % Q = 1) {
+            x := Lap(Epsilon, c + Head(l)); 
             n := x + n;
             next := n;
             c := 0;
             r := Append(r, next);
           } else {
-            x := Lap(Head(l));
+            x := Lap(Epsilon, Head(l));
             next := next + x;
             c := c + Head(l);
             r := Append(r, next);
@@ -33,6 +34,5 @@ CONSTANT Q
     L2: out := r; 
   }
 } *)
-
 
 =============================================================================

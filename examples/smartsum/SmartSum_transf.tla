@@ -1,6 +1,7 @@
 ------------------------------ MODULE SmartSum_transf ------------------------------
 EXTENDS Integers, Sequences, DP
-CONSTANT Q
+
+CONSTANTS Q, Epsilon
 
 (*--algorithm SmartSum {
     variables
@@ -19,8 +20,8 @@ CONSTANT Q
     v_delta = 0;
   {
     L1: while (0 < Len(l1)) { await ((0 < Len(l1)) = (0 < Len(l2)));
-          await ((Len(l1) % Q = 0) = (Len(l2) % Q = 0)); if (Len(l1) % Q = 0) {
-            with (res \in AbsLap(c1 + Head(l1), c2 + Head(l2), v_eps, v_delta)) {
+          await ((Len(l1) % Q = 1) = (Len(l2) % Q = 1)); if (Len(l1) % Q = 1) {
+            with (res \in AbsLap(Epsilon, c1 + Head(l1), c2 + Head(l2), v_eps, v_delta)) {
               x1 := res[1] || x2 := res[2] || v_eps := res[3] || v_delta := res[4]
             }; 
             n1 := x1 + n1 || n2 := x2 + n2;
@@ -28,7 +29,7 @@ CONSTANT Q
             c1 := 0 || c2 := 0;
             r1 := Append(r1, next1) || r2 := Append(r2, next2);
           } else {
-            with (res \in AbsLap(Head(l1), Head(l2), v_eps, v_delta)) {
+            with (res \in AbsLap(Epsilon, Head(l1), Head(l2), v_eps, v_delta)) {
               x1 := res[1] || x2 := res[2] || v_eps := res[3] || v_delta := res[4]
             };
             next1 := next1 + x1 || next2 := next2 + x2;
@@ -40,7 +41,7 @@ CONSTANT Q
     L2: out1 := r1 || out2 := r2; 
   }
 } *)
-\* BEGIN TRANSLATION (chksum(pcal) = "5891aff7" /\ chksum(tla) = "37b4b9ad")
+\* BEGIN TRANSLATION (chksum(pcal) = "2af330c0" /\ chksum(tla) = "6379f826")
 VARIABLES pc, l1, l2, next1, next2, n1, n2, c1, c2, x1, x2, r1, r2, out1, 
           out2, v_eps, v_delta
 
@@ -69,9 +70,9 @@ Init == (* Global variables *)
 L1 == /\ pc = "L1"
       /\ IF 0 < Len(l1)
             THEN /\ ((0 < Len(l1)) = (0 < Len(l2)))
-                 /\ ((Len(l1) % Q = 0) = (Len(l2) % Q = 0))
-                 /\ IF Len(l1) % Q = 0
-                       THEN /\ \E res \in AbsLap(c1 + Head(l1), c2 + Head(l2), v_eps, v_delta):
+                 /\ ((Len(l1) % Q = 1) = (Len(l2) % Q = 1))
+                 /\ IF Len(l1) % Q = 1
+                       THEN /\ \E res \in AbsLap(Epsilon, c1 + Head(l1), c2 + Head(l2), v_eps, v_delta):
                                  /\ v_delta' = res[4]
                                  /\ v_eps' = res[3]
                                  /\ x1' = res[1]
@@ -84,7 +85,7 @@ L1 == /\ pc = "L1"
                                /\ c2' = 0
                             /\ /\ r1' = Append(r1, next1')
                                /\ r2' = Append(r2, next2')
-                       ELSE /\ \E res \in AbsLap(Head(l1), Head(l2), v_eps, v_delta):
+                       ELSE /\ \E res \in AbsLap(Epsilon, Head(l1), Head(l2), v_eps, v_delta):
                                  /\ v_delta' = res[4]
                                  /\ v_eps' = res[3]
                                  /\ x1' = res[1]
@@ -123,6 +124,5 @@ Spec == Init /\ [][Next]_vars
 Termination == <>(pc = "Done")
 
 \* END TRANSLATION 
-
 
 =============================================================================

@@ -155,8 +155,8 @@ THEOREM IndInv == PhiSpec => []IInv
         BY <3>1, <3>2
       <3>3. Epsilon \in Real /\ Epsilon > 0
         BY EpsDef
-      <3>4. mem1.a \in Value /\ mem2.a \in Value
-        BY <3>0 DEF TypeOK
+      <3>4. mem1.a \in Value /\ mem2.a \in Value /\ AbsVal(mem1.a - mem2.a) <= 1
+        BY <3>0 DEF TypeOK, Phi
       <3> QED
         \* BY <3>3, <3>4, ValDef DEF AbsVal
         \* omitted due to lack of real arithmetic support
@@ -178,8 +178,8 @@ THEOREM IndInv == PhiSpec => []IInv
         BY EpsDef
       <3>4. 0 <= v_eps /\ v_eps <= Epsilon
         BY <2>2, <3>0 DEF L2, IInv, TypeOK
-      <3>5. mem1.b \in Value /\ mem2.b \in Value
-        BY <3>0 DEF TypeOK
+      <3>5. mem1.b \in Value /\ mem2.b \in Value /\ AbsVal(mem1.b - mem2.b) <= 1
+        BY <3>0 DEF TypeOK, Phi
       <3> QED
         \* BY <3>0 DEF AbsVal, Phi, TypeOK, ValDef
         \* omitted due to lack of real arithmetic support
