@@ -26,11 +26,6 @@ Real == Int
 (*************)
 LEMMA ZeroIsReal == 0 \in Real
 
-(******************)
-(* Nats are reals *)
-(******************)
-LEMMA NatsAreReals == Nat \in SUBSET Real
-
 (****************************************************************************)
 (* Opaque tail bound for the discrete Laplace distribution w/ parameter eps *)
 (*   LapTail[eps, T] = 2 * exp(-eps * T)                                    *)
@@ -40,6 +35,11 @@ LEMMA NatsAreReals == Nat \in SUBSET Real
 (****************************************************************************)
 LapTail == CHOOSE f : 
   f \in [{e \in Real : e > 0} \X Nat -> {r \in Real : r >= 0}]
+
+LEMMA LapTailType ==
+  \A eps \in Real : eps >= 0 =>
+    \A t \in Nat : /\ LapTail[eps, t] \in Real
+                   /\ 0 <= LapTail[eps, t]
 
 -----------------------------------------------------------------------------
 (********************************)
@@ -98,7 +98,7 @@ AbsLapAccSpec(eps, T, x1, x2, v_eps, v_delta) ==
   ELSE {}
 
 LEMMA AbsLapAccSpecDef ==
-  \A eps \in Real : \A T \in Real :
+  \A eps \in Real : \A T \in Nat :
     \A x1, x2 \in Value :
       \A v_eps, v_delta \in Real :
         x1 = x2 =>

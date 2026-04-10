@@ -1,9 +1,10 @@
 --------------------------------- MODULE PTR_transf ---------------------------------
 EXTENDS Integers, DP
-CONSTANT DBDomain, QOutDomain
+
+CONSTANTS DBDomain, QOutDomain, Epsilon, T
 
 (* Distance function *)
-DistDomain == [DBDomain \X DBDomain -> Real]
+DistDomain == [DBDomain \X DBDomain -> Nat]
 Dist == CHOOSE f \in DistDomain : TRUE
 
 (* Query function *)
@@ -11,8 +12,7 @@ QueryDomain == [DBDomain -> QOutDomain]
 Query == CHOOSE q \in QueryDomain : TRUE
 
 (* Distance to instability *)
-\* DTI(q, d) == Max({x \in Nat : \A d_pr \in DBDomain : Dist[d, d_pr] <= x => q[d_pr] = q[d]})
-DTI == CHOOSE dti \in [QueryDomain \X DistDomain -> Real] : TRUE
+DTI == CHOOSE dti \in [QueryDomain \X DBDomain -> Nat] : TRUE
 
 (* Dummy query output *)
 DummyQOut == CHOOSE qo \in QOutDomain : TRUE
@@ -31,17 +31,17 @@ DummyQOut == CHOOSE qo \in QOutDomain : TRUE
     v_delta = 0;
   {
     L1: x1 := DTI[Query, d1] || x2 := DTI[Query, d2];
-    L2: with (res \in AbsLap(x1, x2, v_eps, v_delta)) {
+    L2: with (res \in AbsLap(Epsilon, x1, x2, v_eps, v_delta)) {
           y1 := res[1] || y2 := res[2] || v_eps := res[3] || v_delta := res[4]
         };
-    L3: await ((Epsilon * AbsVal(y1) > NegLog[Delta]) = (Epsilon * AbsVal(y2) > NegLog[Delta])); if (Epsilon * AbsVal(y1) > NegLog[Delta]) {
+    L3: await ((AbsVal(y1) > T) = (AbsVal(y2) > T)); if (AbsVal(y1) > T) {
     L4:   out1 := Query[d1] || out2 := Query[d2];
         } else {
     L5:   out1 := DummyQOut || out2 := DummyQOut;
         };
   }
 } *)
-\* BEGIN TRANSLATION (chksum(pcal) = "f8ee465a" /\ chksum(tla) = "91472360")
+\* BEGIN TRANSLATION (chksum(pcal) = "99ac5003" /\ chksum(tla) = "4e7fd207")
 VARIABLES pc, d1, d2, x1, x2, y1, y2, out1, out2, v_eps, v_delta
 
 vars == << pc, d1, d2, x1, x2, y1, y2, out1, out2, v_eps, v_delta >>
@@ -66,7 +66,7 @@ L1 == /\ pc = "L1"
       /\ UNCHANGED << d1, d2, y1, y2, out1, out2, v_eps, v_delta >>
 
 L2 == /\ pc = "L2"
-      /\ \E res \in AbsLap(x1, x2, v_eps, v_delta):
+      /\ \E res \in AbsLap(Epsilon, x1, x2, v_eps, v_delta):
            /\ v_delta' = res[4]
            /\ v_eps' = res[3]
            /\ y1' = res[1]
@@ -75,8 +75,8 @@ L2 == /\ pc = "L2"
       /\ UNCHANGED << d1, d2, x1, x2, out1, out2 >>
 
 L3 == /\ pc = "L3"
-      /\ ((Epsilon * AbsVal(y1) > NegLog[Delta]) = (Epsilon * AbsVal(y2) > NegLog[Delta]))
-      /\ IF Epsilon * AbsVal(y1) > NegLog[Delta]
+      /\ ((AbsVal(y1) > T) = (AbsVal(y2) > T))
+      /\ IF AbsVal(y1) > T
             THEN /\ pc' = "L4"
             ELSE /\ pc' = "L5"
       /\ UNCHANGED << d1, d2, x1, x2, y1, y2, out1, out2, v_eps, v_delta >>

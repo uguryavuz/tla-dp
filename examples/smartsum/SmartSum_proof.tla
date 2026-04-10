@@ -20,25 +20,26 @@ ASSUMPTION QDef ==
 (* Type correctness invariant *)
 (******************************)
 
-TypeOK == /\ pc \in {"L1", "L2", "Done"}
-          /\ l1 \in Seq(Value)
-          /\ l2 \in Seq(Value)
-          /\ next1 \in Value
-          /\ next2 \in Value
-          /\ n1 \in Value
-          /\ n2 \in Value
-          /\ c1 \in Value
-          /\ c2 \in Value
-          /\ x1 \in Value
-          /\ x2 \in Value
-          /\ r1 \in Seq(Value)
-          /\ r2 \in Seq(Value)
-          /\ out1 \in Seq(Value)
-          /\ out2 \in Seq(Value)
-          /\ /\ v_eps \in Real
-             /\ v_eps >= 0
-          /\ /\ v_delta \in Real
-             /\ v_delta >= 0
+TypeOK == 
+  /\ pc \in {"L1", "L2", "Done"}
+  /\ l1 \in Seq(Value)
+  /\ l2 \in Seq(Value)
+  /\ next1 \in Value
+  /\ next2 \in Value
+  /\ n1 \in Value
+  /\ n2 \in Value
+  /\ c1 \in Value
+  /\ c2 \in Value
+  /\ x1 \in Value
+  /\ x2 \in Value
+  /\ r1 \in Seq(Value)
+  /\ r2 \in Seq(Value)
+  /\ out1 \in Seq(Value)
+  /\ out2 \in Seq(Value)
+  /\ /\ v_eps \in Real
+      /\ v_eps >= 0
+  /\ /\ v_delta \in Real
+      /\ v_delta >= 0
 
 THEOREM TypeOKInv == Spec => []TypeOK
   <1>1. Init => TypeOK

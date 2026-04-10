@@ -1,9 +1,10 @@
 --------------------------------- MODULE PTR ---------------------------------
 EXTENDS Integers, DP
-CONSTANT DBDomain, QOutDomain
+
+CONSTANTS DBDomain, QOutDomain, Epsilon, T
 
 (* Distance function *)
-DistDomain == [DBDomain \X DBDomain -> Real]
+DistDomain == [DBDomain \X DBDomain -> Nat]
 Dist == CHOOSE f \in DistDomain : TRUE
 
 (* Query function *)
@@ -11,8 +12,7 @@ QueryDomain == [DBDomain -> QOutDomain]
 Query == CHOOSE q \in QueryDomain : TRUE
 
 (* Distance to instability *)
-\* DTI(q, d) == Max({x \in Nat : \A d_pr \in DBDomain : Dist[d, d_pr] <= x => q[d_pr] = q[d]})
-DTI == CHOOSE dti \in [QueryDomain \X DistDomain -> Real] : TRUE
+DTI == CHOOSE dti \in [QueryDomain \X DBDomain -> Nat] : TRUE
 
 (* Dummy query output *)
 DummyQOut == CHOOSE qo \in QOutDomain : TRUE
@@ -28,8 +28,8 @@ DummyQOut == CHOOSE qo \in QOutDomain : TRUE
     out \in QOutDomain;
   {
     L1: x := DTI[Query, d];
-    L2: y := Lap(x);
-    L3: if (Epsilon * AbsVal(y) > NegLog[Delta]) {
+    L2: y := Lap(Epsilon, x);
+    L3: if (AbsVal(y) > T) {
     L4:   out := Query[d];
         } else {
     L5:   out := DummyQOut;
