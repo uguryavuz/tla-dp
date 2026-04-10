@@ -43,22 +43,12 @@ THEOREM PhiInv == PhiSpec => []Phi(d1, d2)
 ASSUMPTION ValDef ==
   Value = Int
 
-ASSUMPTION QueryType == 
-  Query \in [DBDomain -> QOutDomain]
+ASSUMPTION QueryDef == 
+  /\ Query \in QueryDomain
+  /\ NonConstantQuery(Query)
     
 ASSUMPTION DummyQOutType == 
   DummyQOut \in QOutDomain
-
-ASSUMPTION DTIType ==
-  DTI \in [QueryDomain \X DBDomain -> Nat]
-
-ASSUMPTION DTISpec ==
-  \A db1, db2 \in DBDomain :
-    Dist[db1, db2] <= 1 => (
-      \/ Query[db1] = Query[db2]
-      \/ /\ DTI[Query, db1] = DTI[Query, db2]
-         /\ DTI[Query, db1] = 0
-    )
 
 (* Arbitrary epsilon (positive real) *)
 ASSUMPTION EpsDef == 
@@ -68,9 +58,28 @@ ASSUMPTION EpsDef ==
 ASSUMPTION TDef ==
   T \in Nat
 
-ASSUMPTION DTIisOneSensitiveForQuery ==
-  \A db1, db2 \in DBDomain :
-    Dist[db1, db2] <= 1 => AbsVal(DTI[Query, db1] - DTI[Query, db2]) <= 1
+------------------------------------------------------------------------------
+(*************************)
+(* Lemmas related to DTI *)
+(*************************)
+
+LEMMA DTIType ==
+    \A db \in DBDomain : DTI[Query, db] \in Nat
+  BY DTIDefinition, QueryDef DEF QueryDomain
+
+LEMMA DTISpecForQuery ==
+    \A db1, db2 \in DBDomain :
+      Dist[db1, db2] <= 1 => (
+        \/ Query[db1] = Query[db2]
+        \/ /\ DTI[Query, db1] = DTI[Query, db2]
+           /\ DTI[Query, db1] = 0
+      )
+  BY DTISpec, QueryDef
+
+LEMMA DTIHasSensitivityOneForQuery ==
+    \A db1, db2 \in DBDomain :
+      Dist[db1, db2] <= 1 => AbsVal(DTI[Query, db1] - DTI[Query, db2]) <= 1
+  BY DTIHasSensitivityOne, QueryDef
 
 ------------------------------------------------------------------------------
 (******************************)
@@ -101,7 +110,7 @@ THEOREM TypeOKInv == Spec => []TypeOK
                  PROVE  TypeOK'
       OBVIOUS
     <2>1. CASE L1
-      BY <2>1, QueryType, DTIType DEF L1, TypeOK, QueryDomain
+      BY <2>1, QueryDef, DTIType DEF L1, TypeOK, QueryDomain
     <2>2. CASE L2
       <3>1. PICK res \in AbsLap(Epsilon, x1, x2, v_eps, v_delta) :
               /\ v_delta' = res[4]
@@ -136,7 +145,7 @@ THEOREM TypeOKInv == Spec => []TypeOK
     <2>3. CASE L3
       BY <2>3 DEF L3, TypeOK
     <2>4. CASE L4
-      BY <2>4, QueryType DEF L4, TypeOK
+      BY <2>4, QueryDef DEF L4, TypeOK, QueryDomain
     <2>5. CASE L5
       BY <2>5, DummyQOutType DEF L5, TypeOK
     <2>6. CASE Terminating
@@ -201,11 +210,11 @@ THEOREM IndInv == PhiSpec => []IInv
               /\ x2' = DTI[Query, d2]
           BY <2>1 DEF L1, IInv
         <4>2. AbsVal(DTI[Query, d1] - DTI[Query, d2]) <= 1
-          BY <3>1, DTIisOneSensitiveForQuery DEF L1, IInv, TypeOK, Phi
+          BY <3>1, DTIHasSensitivityOneForQuery DEF L1, IInv, TypeOK, Phi
         <4> QED
           BY <4>1, <4>2
       <3> QED
-        BY <2>1, <3>1, <3>2, DTISpec DEF L1, IInv, TypeOK, Phi
+        BY <2>1, <3>1, <3>2, DTISpecForQuery DEF L1, IInv, TypeOK, Phi
     <2>2. CASE L2
       <3> SUFFICES /\ v_eps' <= Epsilon
                    /\ v_delta' <= LapTail[Epsilon, T]

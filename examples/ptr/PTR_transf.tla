@@ -1,18 +1,9 @@
 --------------------------------- MODULE PTR_transf ---------------------------------
-EXTENDS Integers, DP
-
-CONSTANTS DBDomain, QOutDomain, Epsilon, T
-
-(* Distance function *)
-DistDomain == [DBDomain \X DBDomain -> Nat]
-Dist == CHOOSE f \in DistDomain : TRUE
+EXTENDS DTI (* Extends Integers and DP *)
+CONSTANTS Epsilon, T (* DBDomain and QOutDomain declared in DTI *)
 
 (* Query function *)
-QueryDomain == [DBDomain -> QOutDomain]
-Query == CHOOSE q \in QueryDomain : TRUE
-
-(* Distance to instability *)
-DTI == CHOOSE dti \in [QueryDomain \X DBDomain -> Nat] : TRUE
+Query == CHOOSE q \in QueryDomain : NonConstantQuery(q)
 
 (* Dummy query output *)
 DummyQOut == CHOOSE qo \in QOutDomain : TRUE

@@ -63,18 +63,20 @@ NonConstantQuery(q) ==
 THEOREM DTIDefinition ==
     \A q \in QueryDomain, d \in DBDomain :
       NonConstantQuery(q) =>
+        /\ DTI[q, d] \in Nat
         /\ DTI[q, d] \in StableRadii(q, d)
         /\ \A y \in StableRadii(q, d) : y <= DTI[q, d] 
   <1> SUFFICES ASSUME NEW q \in QueryDomain,
                       NEW d \in DBDomain,
                       NonConstantQuery(q)
-               PROVE  /\ DTI[q, d] \in StableRadii(q, d)
+               PROVE  /\ DTI[q, d] \in Nat
+                      /\ DTI[q, d] \in StableRadii(q, d)
                       /\ \A y \in StableRadii(q, d) : y <= DTI[q, d]
     OBVIOUS
   <1>1. DTI[q, d] = CHOOSE x \in StableRadii(q, d) : \A y \in StableRadii(q, d) : y <= x
     BY Zenon DEF DTI
   <1> SUFFICES \E x \in StableRadii(q, d) : \A y \in StableRadii(q, d) : y <= x
-    BY <1>1
+    BY <1>1 DEF StableRadii
   <1>2. UnstableRadii(q, d) # {}
     <2> SUFFICES \E x \in Nat : \E d_pr \in DBDomain : Dist[d, d_pr] <= x /\ q[d_pr] # q[d]
       BY DEF UnstableRadii
